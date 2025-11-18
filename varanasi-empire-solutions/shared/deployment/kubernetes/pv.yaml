@@ -1,0 +1,98 @@
+---
+# PersistentVolume for PostgreSQL Database
+# Production-grade storage with proper access modes
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-pv
+  labels:
+    app: varanasi-empire
+    component: database
+    environment: production
+spec:
+  capacity:
+    storage: 100Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: fast-ssd
+  # For AWS EBS
+  awsElasticBlockStore:
+    volumeID: vol-xxxxxxxxxxxxx
+    fsType: ext4
+  # For GCP GCE PersistentDisk
+  # gcePersistentDisk:
+  #   pdName: postgres-disk
+  #   fsType: ext4
+  # For Azure Disk
+  # azureDisk:
+  #   diskName: postgres-disk
+  #   diskURI: /subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Compute/disks/postgres-disk
+  # For On-Premise NFS
+  # nfs:
+  #   server: nfs-server.example.com
+  #   path: "/exports/postgres"
+
+---
+# PersistentVolume for Redis Cache
+# Faster storage for caching layer
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: redis-pv
+  labels:
+    app: varanasi-empire
+    component: cache
+    environment: production
+spec:
+  capacity:
+    storage: 50Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: fast-ssd
+  # For AWS EBS
+  awsElasticBlockStore:
+    volumeID: vol-yyyyyyyyyyyyy
+    fsType: ext4
+
+---
+# StorageClass for fast SSD storage
+# Auto-provisioning with proper parameters
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: fast-ssd
+  labels:
+    app: varanasi-empire
+    tier: premium
+provisioner: ebs.csi.aws.com  # AWS EBS CSI Driver
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  type: gp3
+  iops: "3000"
+  throughput: "125"
+  encrypted: "true"
+  fstype: ext4
+
+---
+# StorageClass for standard storage
+# Cost-effective option for less critical data
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: standard-ssd
+  labels:
+    app: varanasi-empire
+    tier: standard
+provisioner: ebs.csi.aws.com  # AWS EBS CSI Driver
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  type: gp2
+  iops: "1000"
+  encrypted: "true"
+  fstype: ext4

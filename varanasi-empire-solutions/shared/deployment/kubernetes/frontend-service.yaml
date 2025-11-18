@@ -1,0 +1,91 @@
+---
+# Frontend Service (ClusterIP)
+# Internal service for frontend communication
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    component: frontend
+    tier: presentation
+  annotations:
+    description: "Frontend Service for Varanasi Empire"
+spec:
+  type: ClusterIP
+  selector:
+    app: varanasi-empire
+    component: frontend
+  ports:
+  - name: http
+    port: 3000
+    targetPort: 3000
+    protocol: TCP
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+
+---
+# Frontend Service (LoadBalancer)
+# External access for frontend
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-lb-service
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    component: frontend
+    tier: presentation
+    access: external
+  annotations:
+    description: "Frontend LoadBalancer Service"
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+spec:
+  type: LoadBalancer
+  selector:
+    app: varanasi-empire
+    component: frontend
+  ports:
+  - name: http
+    port: 80
+    targetPort: 3000
+    protocol: TCP
+  - name: https
+    port: 443
+    targetPort: 3000
+    protocol: TCP
+  sessionAffinity: ClientIP
+  loadBalancerSourceRanges:
+  - 0.0.0.0/0  # Restrict this in production
+
+---
+# Frontend Service (NodePort)
+# For Kubernetes-native load balancing
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-nodeport-service
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    component: frontend
+    tier: presentation
+    access: nodeport
+  annotations:
+    description: "Frontend NodePort Service"
+spec:
+  type: NodePort
+  selector:
+    app: varanasi-empire
+    component: frontend
+  ports:
+  - name: http
+    port: 3000
+    targetPort: 3000
+    protocol: TCP
+    nodePort: 30003  # Change if conflicts
+  sessionAffinity: ClientIP

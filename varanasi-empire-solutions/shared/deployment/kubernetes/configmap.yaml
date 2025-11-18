@@ -1,0 +1,215 @@
+---
+# ConfigMap for PostgreSQL Configuration
+# Non-sensitive database configurations
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    component: database
+  annotations:
+    description: "PostgreSQL configuration"
+data:
+  POSTGRES_DB: "varanasi_empire"
+  POSTGRES_USER: "varanasi_admin"
+  POSTGRES_HOST_AUTH_METHOD: "scram-sha-256"
+  POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.UTF-8"
+  postgresql.conf: |
+    max_connections = 200
+    shared_buffers = 2GB
+    effective_cache_size = 6GB
+    maintenance_work_mem = 512MB
+    checkpoint_completion_target = 0.9
+    wal_buffers = 16MB
+    default_statistics_target = 100
+    random_page_cost = 1.1
+    effective_io_concurrency = 200
+    work_mem = 10485kB
+    min_wal_size = 2GB
+    max_wal_size = 8GB
+    max_worker_processes = 4
+    max_parallel_workers_per_gather = 2
+    max_parallel_workers = 4
+    max_parallel_maintenance_workers = 2
+    log_min_duration_statement = 1000
+    log_connections = on
+    log_disconnections = on
+    log_statement = 'all'
+  pg_hba.conf: |
+    # TYPE  DATABASE        USER            ADDRESS                 METHOD
+    local   all             all                                     trust
+    host    all             all             127.0.0.1/32            scram-sha-256
+    host    all             all             ::1/128                 scram-sha-256
+    host    all             all             0.0.0.0/0               scram-sha-256
+    host    replication     all             0.0.0.0/0               scram-sha-256
+
+---
+# ConfigMap for Redis Configuration
+# Cache layer configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    component: cache
+  annotations:
+    description: "Redis configuration"
+data:
+  redis.conf: |
+    maxmemory 4gb
+    maxmemory-policy allkeys-lru
+    timeout 300
+    tcp-keepalive 60
+    daemonize no
+    pidfile /var/run/redis.pid
+    loglevel notice
+    logfile ""
+    databases 16
+    save 900 1
+    save 300 10
+    save 60 10000
+    rdbcompression yes
+    rdbchecksum yes
+    dbfilename dump.rdb
+    appendonly yes
+    appendfilename "appendonly.aof"
+    appendfsync everysec
+    no-appendfsync-on-rewrite no
+    auto-aof-rewrite-percentage 100
+    auto-aof-rewrite-min-size 64mb
+
+---
+# ConfigMap for Backend Application
+# Application-level configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    component: backend
+  annotations:
+    description: "Backend API configuration"
+data:
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "info"
+  SERVER_PORT: "8080"
+  SERVER_HOST: "0.0.0.0"
+  API_VERSION: "v1"
+  CORS_ORIGINS: "https://varanasi-empire.example.com,https://www.varanasi-empire.example.com"
+  CORS_CREDENTIALS: "true"
+  CORS_MAX_AGE: "86400"
+  REQUEST_TIMEOUT: "30000"
+  RATE_LIMIT_WINDOW_MS: "900000"
+  RATE_LIMIT_MAX_REQUESTS: "1000"
+  DATABASE_POOL_MIN: "5"
+  DATABASE_POOL_MAX: "20"
+  DATABASE_POOL_IDLE_TIMEOUT: "30000"
+  REDIS_TTL_CACHE: "3600"
+  REDIS_TTL_SESSIONS: "86400"
+  JWT_EXPIRATION: "3600"
+  REFRESH_TOKEN_EXPIRATION: "604800"
+  EMAIL_VERIFICATION_LINK_TTL: "86400"
+  PASSWORD_RESET_LINK_TTL: "3600"
+  BCRYPT_ROUNDS: "10"
+  ENABLE_API_DOCS: "true"
+  ENABLE_METRICS: "true"
+  ENABLE_TRACING: "true"
+
+---
+# ConfigMap for Frontend Application
+# Frontend environment variables
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    component: frontend
+  annotations:
+    description: "Frontend application configuration"
+data:
+  REACT_APP_API_URL: "https://api.varanasi-empire.example.com/api/v1"
+  REACT_APP_ENVIRONMENT: "production"
+  REACT_APP_LOG_LEVEL: "info"
+  REACT_APP_ENABLE_ANALYTICS: "true"
+  REACT_APP_ANALYTICS_ID: "UA-XXXXXXXXX-X"
+  REACT_APP_SESSION_TIMEOUT: "3600000"
+  REACT_APP_TOKEN_REFRESH_INTERVAL: "300000"
+  REACT_APP_ENABLE_SERVICE_WORKER: "true"
+  REACT_APP_ENABLE_ERROR_TRACKING: "true"
+  REACT_APP_ENABLE_PERFORMANCE_MONITORING: "true"
+  REACT_APP_DEFAULT_LANGUAGE: "en"
+  REACT_APP_SUPPORTED_LANGUAGES: "en,es,fr,de,ja,zh"
+  REACT_APP_DATE_FORMAT: "YYYY-MM-DD"
+  REACT_APP_TIME_ZONE: "UTC"
+
+---
+# ConfigMap for Monitoring and Logging
+# Prometheus and logging configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: monitoring-config
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    component: monitoring
+  annotations:
+    description: "Monitoring and logging configuration"
+data:
+  prometheus-config.yaml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+      external_labels:
+        cluster: 'varanasi-empire'
+        environment: 'production'
+    scrape_configs:
+      - job_name: 'backend'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names:
+                - varanasi-empire
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: "true"
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            target_label: __address__
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+      - job_name: 'postgres'
+        static_configs:
+          - targets: ['postgres-service:5432']
+      - job_name: 'redis'
+        static_configs:
+          - targets: ['redis-service:6379']
+
+  fluent-bit-config: |
+    [SERVICE]
+      Daemon Off
+      Flush 1
+      Log_Level info
+    [INPUT]
+      Name systemd
+      Tag host.*
+      Read_From_Tail On
+    [OUTPUT]
+      Name stackdriver
+      Match *
+      resource k8s_container
+      k8s_cluster_name varanasi-empire
+      k8s_cluster_location us-central1

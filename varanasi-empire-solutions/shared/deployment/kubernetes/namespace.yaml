@@ -1,0 +1,69 @@
+---
+# Namespace for Varanasi Empire Solutions
+# Provides isolation for all application resources
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: varanasi-empire
+  labels:
+    app: varanasi-empire
+    environment: production
+    managed-by: kubernetes
+  annotations:
+    description: "Namespace for Varanasi Empire Solutions - Complete Business Ecosystem"
+    team: "Platform Engineering"
+    contact: "devops@varanasi-empire.local"
+
+---
+# ResourceQuota for the namespace
+# Prevents resource exhaustion
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: varanasi-empire-quota
+  namespace: varanasi-empire
+spec:
+  hard:
+    requests.cpu: "100"
+    requests.memory: "200Gi"
+    limits.cpu: "200"
+    limits.memory: "400Gi"
+    pods: "500"
+    services: "50"
+    persistentvolumeclaims: "20"
+  scopeSelector:
+    matchExpressions:
+    - operator: In
+      scopeName: PriorityClass
+      values: ["high", "medium", "low"]
+
+---
+# NetworkPolicy for secure communication
+# Restricts traffic to/from pods
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: varanasi-empire-policy
+  namespace: varanasi-empire
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: varanasi-empire
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: varanasi-empire
+  - to:
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 53
+    - protocol: UDP
+      port: 53

@@ -1,0 +1,120 @@
+---
+# PostgreSQL Service
+# Exposes database for internal and external connections
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    component: database
+    version: "15"
+  annotations:
+    description: "PostgreSQL Service for Varanasi Empire"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "5432"
+spec:
+  type: ClusterIP
+  selector:
+    app: varanasi-empire
+    component: database
+  ports:
+  - name: postgres
+    port: 5432
+    targetPort: 5432
+    protocol: TCP
+  - name: replication
+    port: 5433
+    targetPort: 5433
+    protocol: TCP
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+
+---
+# Headless Service for StatefulSet
+# Required for StatefulSet DNS resolution
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-headless
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    component: database
+  annotations:
+    description: "Headless service for PostgreSQL StatefulSet"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: varanasi-empire
+    component: database
+  ports:
+  - name: postgres
+    port: 5432
+    targetPort: 5432
+    protocol: TCP
+  - name: replication
+    port: 5433
+    targetPort: 5433
+    protocol: TCP
+  publishNotReadyAddresses: true
+
+---
+# Service for PostgreSQL Exporter (Prometheus metrics)
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-exporter-service
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    component: database
+    monitoring: "true"
+  annotations:
+    description: "PostgreSQL Exporter Service for Prometheus"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9187"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  selector:
+    app: varanasi-empire
+    component: database
+  ports:
+  - name: metrics
+    port: 9187
+    targetPort: 9187
+    protocol: TCP
+
+---
+# External LoadBalancer Service for backup/restore access (optional)
+# Uncomment for direct external access
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-lb-service
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    component: database
+    access: external
+  annotations:
+    description: "PostgreSQL LoadBalancer Service for external access"
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+spec:
+  type: LoadBalancer
+  selector:
+    app: varanasi-empire
+    component: database
+  ports:
+  - name: postgres
+    port: 5432
+    targetPort: 5432
+    protocol: TCP
+  loadBalancerSourceRanges:
+  - 0.0.0.0/0  # Change this to restrict access
+  sessionAffinity: ClientIP

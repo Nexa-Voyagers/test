@@ -1,0 +1,358 @@
+---
+# Horizontal Pod Autoscaler for Backend
+# Auto-scales backend deployment based on CPU and memory usage
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backend-hpa
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    component: backend
+  annotations:
+    description: "Backend autoscaler based on CPU and memory metrics"
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend-deployment
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+      selectPolicy: Min
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30
+      - type: Pods
+        value: 2
+        periodSeconds: 30
+      selectPolicy: Max
+
+---
+# Horizontal Pod Autoscaler for Frontend
+# Auto-scales frontend deployment based on CPU and memory usage
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: frontend-hpa
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    component: frontend
+  annotations:
+    description: "Frontend autoscaler based on CPU and memory metrics"
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend-deployment
+  minReplicas: 3
+  maxReplicas: 8
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 75
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 85
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+      selectPolicy: Min
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30
+      - type: Pods
+        value: 1
+        periodSeconds: 30
+      selectPolicy: Max
+
+---
+# Horizontal Pod Autoscaler for Redis
+# Conservative scaling for cache layer
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: redis-hpa
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    component: cache
+  annotations:
+    description: "Redis autoscaler with conservative scaling policy"
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: redis-deployment
+  minReplicas: 3
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 75
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 600
+      policies:
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+      selectPolicy: Min
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+      selectPolicy: Max
+
+---
+# Custom Metrics for Backend HPA (using Prometheus)
+# Requires Prometheus and custom metrics adapter
+# Uncomment if using custom metrics
+# apiVersion: autoscaling/v2
+# kind: HorizontalPodAutoscaler
+# metadata:
+#   name: backend-custom-hpa
+#   namespace: varanasi-empire
+#   labels:
+#     app: varanasi-empire
+#     component: backend
+# spec:
+#   scaleTargetRef:
+#     apiVersion: apps/v1
+#     kind: Deployment
+#     name: backend-deployment
+#   minReplicas: 3
+#   maxReplicas: 10
+#   metrics:
+#   - type: Pods
+#     pods:
+#       metric:
+#         name: http_requests_per_second
+#       target:
+#         type: AverageValue
+#         averageValue: "1k"
+#   - type: Pods
+#     pods:
+#       metric:
+#         name: http_request_duration_seconds
+#       target:
+#         type: AverageValue
+#         averageValue: "500m"
+
+---
+# Vertical Pod Autoscaler (VPA)
+# Automatically adjust resource requests and limits
+# Requires VPA to be installed
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: backend-vpa
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    component: backend
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind: Deployment
+    name: backend-deployment
+  updatePolicy:
+    updateMode: "Auto"  # Options: "Off", "Initial", "Recreate", "Auto"
+  resourcePolicy:
+    containerPolicies:
+    - containerName: "backend"
+      minAllowed:
+        cpu: 100m
+        memory: 128Mi
+      maxAllowed:
+        cpu: 1000m
+        memory: 2Gi
+      controlledResources: ["cpu", "memory"]
+
+---
+# VPA for Frontend
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: frontend-vpa
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    component: frontend
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind: Deployment
+    name: frontend-deployment
+  updatePolicy:
+    updateMode: "Auto"
+  resourcePolicy:
+    containerPolicies:
+    - containerName: "frontend"
+      minAllowed:
+        cpu: 50m
+        memory: 128Mi
+      maxAllowed:
+        cpu: 500m
+        memory: 1Gi
+      controlledResources: ["cpu", "memory"]
+
+---
+# VPA for Redis
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: redis-vpa
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    component: cache
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind: Deployment
+    name: redis-deployment
+  updatePolicy:
+    updateMode: "Auto"
+  resourcePolicy:
+    containerPolicies:
+    - containerName: "redis"
+      minAllowed:
+        cpu: 100m
+        memory: 256Mi
+      maxAllowed:
+        cpu: 1000m
+        memory: 4Gi
+      controlledResources: ["cpu", "memory"]
+
+---
+# Metrics Server (required for HPA to work)
+# Collects resource metrics from kubelet
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kube-system
+
+---
+# ServiceMonitor for Prometheus
+# Scrapes metrics from custom metric endpoints
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: varanasi-empire-monitor
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+spec:
+  selector:
+    matchLabels:
+      app: varanasi-empire
+  endpoints:
+  - port: metrics
+    interval: 30s
+    path: /metrics
+
+---
+# PrometheusRule for alerting
+# Alert rules for monitoring and alerting
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: varanasi-empire-alerts
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    prometheus: kube-prometheus
+spec:
+  groups:
+  - name: varanasi-empire.rules
+    interval: 30s
+    rules:
+    - alert: HighMemoryUsage
+      expr: container_memory_usage_bytes{pod=~"backend-.*|frontend-.*"} / container_spec_memory_limit_bytes > 0.9
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High memory usage detected in {{ $labels.pod }}"
+        description: "Pod {{ $labels.pod }} memory usage is above 90%"
+
+    - alert: HighCPUUsage
+      expr: rate(container_cpu_usage_seconds_total{pod=~"backend-.*|frontend-.*"}[5m]) > 0.8
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High CPU usage detected in {{ $labels.pod }}"
+        description: "Pod {{ $labels.pod }} CPU usage is above 80%"
+
+    - alert: PodRestartingTooOften
+      expr: rate(kube_pod_container_status_restarts_total{namespace="varanasi-empire"}[15m]) > 0
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Pod {{ $labels.pod }} is restarting frequently"
+
+    - alert: DatabaseConnectionPoolExhausted
+      expr: pg_stat_database_numbackends{datname="varanasi_empire"} > 190
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Database connection pool near capacity"
+
+    - alert: RedisMemoryHighUsage
+      expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.85
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Redis memory usage is above 85%"

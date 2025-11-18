@@ -1,0 +1,98 @@
+---
+# Backend API Service (ClusterIP)
+# Internal service for backend communication
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    component: backend
+    tier: api
+  annotations:
+    description: "Backend API Service for Varanasi Empire"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+    prometheus.io/path: "/api/v1/metrics"
+spec:
+  type: ClusterIP
+  selector:
+    app: varanasi-empire
+    component: backend
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+  - name: metrics
+    port: 9090
+    targetPort: 9090
+    protocol: TCP
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+
+---
+# Backend Service (LoadBalancer)
+# External access for backend API
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-lb-service
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    component: backend
+    tier: api
+    access: external
+  annotations:
+    description: "Backend LoadBalancer Service"
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+spec:
+  type: LoadBalancer
+  selector:
+    app: varanasi-empire
+    component: backend
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+    protocol: TCP
+  - name: https
+    port: 443
+    targetPort: 8080
+    protocol: TCP
+  sessionAffinity: ClientIP
+  loadBalancerSourceRanges:
+  - 0.0.0.0/0  # Restrict this in production
+
+---
+# Backend Service (NodePort)
+# For Kubernetes-native load balancing
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-nodeport-service
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    component: backend
+    tier: api
+    access: nodeport
+  annotations:
+    description: "Backend NodePort Service"
+spec:
+  type: NodePort
+  selector:
+    app: varanasi-empire
+    component: backend
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+    nodePort: 30080  # Change if conflicts
+  sessionAffinity: ClientIP

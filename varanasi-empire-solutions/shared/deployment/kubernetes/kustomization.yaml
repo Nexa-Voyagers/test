@@ -1,0 +1,238 @@
+---
+# Kustomization file for Kubernetes manifests
+# Enables environment-specific customization and DRY principles
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: varanasi-empire
+  namespace: varanasi-empire
+
+# Common labels applied to all resources
+commonLabels:
+  app: varanasi-empire
+  managed-by: kustomize
+  version: "1.0.0"
+
+# Common annotations applied to all resources
+commonAnnotations:
+  company: "Varanasi Empire Solutions"
+  environment: production
+  last-modified: "2024-11-18"
+
+# Resources to include
+resources:
+- namespace.yaml
+- pv.yaml
+- configmap.yaml
+- secrets.yaml
+- postgres-service.yaml
+- postgres-statefulset.yaml
+- redis-service.yaml
+- redis-deployment.yaml
+- backend-service.yaml
+- backend-deployment.yaml
+- frontend-service.yaml
+- frontend-deployment.yaml
+- ingress.yaml
+- hpa.yaml
+
+# Namespace declaration
+namespace: varanasi-empire
+
+# Images configuration for easy version updates
+images:
+- name: postgres
+  newName: postgres
+  newTag: "15-alpine"
+- name: redis
+  newName: redis
+  newTag: "7-alpine"
+- name: prometheus-postgres-exporter
+  newName: prometheuscommunity/postgres-exporter
+  newTag: "v0.12.1"
+- name: redis-exporter
+  newName: oliver006/redis_exporter
+  newTag: latest
+- name: varanasi-empire/backend
+  newName: varanasi-empire/backend
+  newTag: latest
+- name: varanasi-empire/frontend
+  newName: varanasi-empire/frontend
+  newTag: latest
+
+# ConfigMap generator for dynamic configuration
+# Replaces placeholder values
+configMapGenerator:
+- name: backend-config
+  behavior: replace
+  envs:
+  - backend-config.env
+  literals:
+  - ENVIRONMENT=production
+  - LOG_LEVEL=info
+
+- name: frontend-config
+  behavior: replace
+  envs:
+  - frontend-config.env
+
+- name: postgres-config
+  behavior: replace
+  files:
+  - postgresql.conf
+  - pg_hba.conf
+
+- name: redis-config
+  behavior: replace
+  files:
+  - redis.conf
+
+# Secret generator
+# Note: This is for demonstration. Use external secret management in production
+secretGenerator:
+- name: postgres-secret
+  behavior: replace
+  envs:
+  - postgres-secret.env
+
+- name: redis-secret
+  behavior: replace
+  envs:
+  - redis-secret.env
+
+- name: backend-secret
+  behavior: replace
+  envs:
+  - backend-secret.env
+
+- name: tls-secret
+  behavior: replace
+  type: kubernetes.io/tls
+  files:
+  - tls.crt=tls-cert.crt
+  - tls.key=tls-key.key
+
+# Patches for environment-specific changes
+patches:
+# Patch backend replicas for different environments
+- target:
+    group: apps
+    version: v1
+    kind: Deployment
+    name: backend-deployment
+  patch: |-
+    - op: replace
+      path: /spec/replicas
+      value: 3
+
+# Patch frontend replicas
+- target:
+    group: apps
+    version: v1
+    kind: Deployment
+    name: frontend-deployment
+  patch: |-
+    - op: replace
+      path: /spec/replicas
+      value: 3
+
+# Patch resource requests for production
+- target:
+    group: apps
+    version: v1
+    kind: Deployment
+    name: backend-deployment
+    namespace: varanasi-empire
+  patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests/cpu
+      value: 250m
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests/memory
+      value: 512Mi
+
+# Strategic merge patch for deployment
+patchesStrategicMerge:
+- deployment-patch.yaml
+
+# JSON patches for specific changes
+patchesJson6902:
+- target:
+    group: apps
+    version: v1
+    kind: StatefulSet
+    name: postgres-statefulset
+  patch: |
+    - op: replace
+      path: /spec/replicas
+      value: 3
+
+# Replacements for variable substitution
+replacements:
+- source:
+    kind: ConfigMap
+    name: backend-config
+    fieldPath: data.DATABASE_HOST
+  targets:
+  - select:
+      kind: Deployment
+      name: backend-deployment
+    fieldPaths:
+    - spec.template.spec.containers[0].env[7].valueFrom.secretKeyRef.name
+
+# Suffix for resource names (e.g., -prod, -dev)
+nameSuffix: ""
+
+# Prefix for resource names
+namePrefix: ""
+
+# Variables for template substitution
+vars:
+- name: NAMESPACE
+  objref:
+    kind: Namespace
+    name: varanasi-empire
+  fieldref:
+    fieldpath: metadata.name
+
+- name: DOMAIN
+  objref:
+    kind: ConfigMap
+    name: backend-config
+  fieldref:
+    fieldpath: data.DOMAIN
+
+# RBAC configuration
+# Enable to automatically create RBAC resources
+# rbacConfig:
+#   splitter: default
+#   defaultRules:
+#   - verbs:
+#     - get
+#     - list
+#     - watch
+#     apiGroups:
+#     - ""
+#     resources:
+#     - pods
+
+# Metadata for tracking
+# metadata:
+#   labels:
+#     kustomize.config.k8s.io/version: v4.5.7
+#     kustomize.config.k8s.io/inventory: |-
+#       {
+#         "group": "varanasi-empire",
+#         "kind": "Kustomization",
+#         "name": "varanasi-empire"
+#       }
+
+# Validation schema
+# schemaVersion: 1.0.0
+
+# Build configuration
+# buildMetadata:
+# - originAnnotations
+# - transformerAnnotations
+# - managedByLabel

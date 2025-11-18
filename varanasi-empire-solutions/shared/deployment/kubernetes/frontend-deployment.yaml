@@ -1,0 +1,287 @@
+---
+# Frontend Deployment
+# React SPA for Varanasi Empire Solutions
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    component: frontend
+    tier: presentation
+  annotations:
+    description: "Frontend React deployment with auto-scaling"
+    monitoring: "true"
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: varanasi-empire
+      component: frontend
+  template:
+    metadata:
+      labels:
+        app: varanasi-empire
+        component: frontend
+        tier: presentation
+      annotations:
+        prometheus.io/scrape: "false"
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - varanasi-empire
+                - key: component
+                  operator: In
+                  values:
+                  - frontend
+              topologyKey: kubernetes.io/hostname
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 50
+            preference:
+              matchExpressions:
+              - key: workload-type
+                operator: In
+                values:
+                - frontend
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 3000
+        fsGroup: 2000
+        seccompProfile:
+          type: RuntimeDefault
+
+      terminationGracePeriodSeconds: 30
+      serviceAccountName: frontend-service-account
+      imagePullSecrets:
+      - name: docker-registry-secret
+
+      containers:
+      - name: frontend
+        image: varanasi-empire/frontend:latest  # Change to your registry
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 3000
+          protocol: TCP
+
+        env:
+        # React environment variables
+        - name: REACT_APP_ENVIRONMENT
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: REACT_APP_ENVIRONMENT
+        - name: REACT_APP_API_URL
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: REACT_APP_API_URL
+        - name: REACT_APP_LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: REACT_APP_LOG_LEVEL
+        - name: REACT_APP_ENABLE_ANALYTICS
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: REACT_APP_ENABLE_ANALYTICS
+        - name: REACT_APP_ANALYTICS_ID
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: REACT_APP_ANALYTICS_ID
+        - name: REACT_APP_SESSION_TIMEOUT
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: REACT_APP_SESSION_TIMEOUT
+        - name: REACT_APP_ENABLE_SERVICE_WORKER
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: REACT_APP_ENABLE_SERVICE_WORKER
+        - name: REACT_APP_ENABLE_ERROR_TRACKING
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: REACT_APP_ENABLE_ERROR_TRACKING
+        - name: REACT_APP_DEFAULT_LANGUAGE
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: REACT_APP_DEFAULT_LANGUAGE
+        - name: REACT_APP_SUPPORTED_LANGUAGES
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: REACT_APP_SUPPORTED_LANGUAGES
+        - name: REACT_APP_DATE_FORMAT
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: REACT_APP_DATE_FORMAT
+        - name: REACT_APP_TIME_ZONE
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: REACT_APP_TIME_ZONE
+
+        # Pod information
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+
+        startupProbe:
+          httpGet:
+            path: /
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 30
+
+        volumeMounts:
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+        - name: tmp
+          mountPath: /tmp
+        - name: cache
+          mountPath: /app/.cache
+
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+            - ALL
+
+      volumes:
+      - name: config
+        configMap:
+          name: frontend-config
+          defaultMode: 0644
+      - name: tmp
+        emptyDir: {}
+      - name: cache
+        emptyDir: {}
+
+---
+# ServiceAccount for Frontend
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: frontend-service-account
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    component: frontend
+
+---
+# Role for Frontend Pod
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: frontend-role
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    component: frontend
+rules:
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch"]
+
+---
+# RoleBinding for Frontend Pod
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: frontend-rolebinding
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    component: frontend
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: frontend-role
+subjects:
+- kind: ServiceAccount
+  name: frontend-service-account
+  namespace: varanasi-empire
+
+---
+# PodDisruptionBudget for high availability
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: frontend-pdb
+  namespace: varanasi-empire
+  labels:
+    app: varanasi-empire
+    component: frontend
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: varanasi-empire
+      component: frontend
