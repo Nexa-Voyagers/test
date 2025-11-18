@@ -1,17 +1,22 @@
 import express from 'express';
-import { asyncHandler } from '../utils/asyncHandler.js';
+import attendanceController from '../controllers/attendance.controller.js';
+import { authMiddleware } from '../middleware/auth.js';
+
 const router = express.Router();
 
-router.get('/', asyncHandler(async (req, res) => {
-  res.json({ success: true, data: [] });
-}));
+router.use(authMiddleware);
 
-router.post('/', asyncHandler(async (req, res) => {
-  res.status(201).json({ success: true, message: 'attendance created' });
-}));
-
-router.get('/:id', asyncHandler(async (req, res) => {
-  res.json({ success: true, data: { id: req.params.id } });
-}));
+router.post('/check-in', attendanceController.checkIn);
+router.post('/check-out', attendanceController.checkOutByMember);
+router.get('/', attendanceController.getAllAttendance);
+router.get('/today', attendanceController.getTodayAttendance);
+router.get('/currently-checked-in', attendanceController.getCurrentlyCheckedIn);
+router.get('/statistics', attendanceController.getAttendanceStatistics);
+router.get('/peak-hours', attendanceController.getPeakHours);
+router.get('/daily-trend', attendanceController.getDailyTrend);
+router.get('/member/:memberId/history', attendanceController.getMemberAttendanceHistory);
+router.get('/member/:memberId/frequency', attendanceController.getAttendanceFrequency);
+router.get('/:id', attendanceController.getAttendanceById);
+router.post('/:id/check-out', attendanceController.checkOut);
 
 export default router;

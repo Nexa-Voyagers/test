@@ -1,17 +1,31 @@
 import express from 'express';
-import { asyncHandler } from '../utils/asyncHandler.js';
+import {
+  createStudent,
+  getStudentById,
+  getAllStudents,
+  searchStudents,
+  updateStudent,
+  deleteStudent,
+  getStudentEnrollments,
+  getStudentPerformance
+} from '../controllers/student.controller.js';
+
 const router = express.Router();
 
-router.get('/', asyncHandler(async (req, res) => {
-  res.json({ success: true, data: [] });
-}));
+/**
+ * @swagger
+ * tags:
+ *   name: Students
+ *   description: Student management endpoints
+ */
 
-router.post('/', asyncHandler(async (req, res) => {
-  res.status(201).json({ success: true, message: 'student created' });
-}));
-
-router.get('/:id', asyncHandler(async (req, res) => {
-  res.json({ success: true, data: { id: req.params.id } });
-}));
+router.post('/', createStudent);
+router.get('/search', searchStudents);
+router.get('/', getAllStudents);
+router.get('/:id', getStudentById);
+router.put('/:id', updateStudent);
+router.delete('/:id', deleteStudent);
+router.get('/:id/enrollments', getStudentEnrollments);
+router.get('/:id/performance', getStudentPerformance);
 
 export default router;

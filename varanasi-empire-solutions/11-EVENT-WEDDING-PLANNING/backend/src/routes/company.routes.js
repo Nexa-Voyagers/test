@@ -1,17 +1,19 @@
 import express from 'express';
-import { asyncHandler } from '../utils/asyncHandler.js';
+import companyController from '../controllers/company.controller.js';
+import { authMiddleware } from '../middleware/auth.js';
+
 const router = express.Router();
 
-router.get('/', asyncHandler(async (req, res) => {
-  res.json({ success: true, data: [] });
-}));
+// Apply auth middleware to all routes
+router.use(authMiddleware);
 
-router.post('/', asyncHandler(async (req, res) => {
-  res.status(201).json({ success: true, message: 'company created' });
-}));
-
-router.get('/:id', asyncHandler(async (req, res) => {
-  res.json({ success: true, data: { id: req.params.id } });
-}));
+// Company routes
+router.post('/', companyController.createCompany);
+router.get('/', companyController.getCompanies);
+router.get('/:id/stats', companyController.getCompanyStats);
+router.get('/:id/statistics', companyController.getCompanyStatistics);
+router.get('/:id', companyController.getCompanyById);
+router.put('/:id', companyController.updateCompany);
+router.delete('/:id', companyController.deleteCompany);
 
 export default router;

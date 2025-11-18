@@ -1,17 +1,28 @@
 import express from 'express';
-import { asyncHandler } from '../utils/asyncHandler.js';
+import {
+  createBatch,
+  getBatchById,
+  getAllBatches,
+  updateBatch,
+  deleteBatch,
+  getBatchStatistics,
+  getAvailableBatches
+} from '../controllers/batch.controller.js';
+
 const router = express.Router();
 
-router.get('/', asyncHandler(async (req, res) => {
-  res.json({ success: true, data: [] });
-}));
+/**
+ * @swagger
+ * tags:
+ *   name: Batches
+ *   description: Batch management endpoints
+ */
 
-router.post('/', asyncHandler(async (req, res) => {
-  res.status(201).json({ success: true, message: 'batch created' });
-}));
-
-router.get('/:id', asyncHandler(async (req, res) => {
-  res.json({ success: true, data: { id: req.params.id } });
-}));
+router.post('/', createBatch);
+router.get('/', getAllBatches);
+router.get('/:id', getBatchById);
+router.put('/:id', updateBatch);
+router.delete('/:id', deleteBatch);
+router.get('/:id/statistics', getBatchStatistics);
 
 export default router;

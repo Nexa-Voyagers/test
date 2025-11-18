@@ -1,17 +1,21 @@
 import express from 'express';
-import { asyncHandler } from '../utils/asyncHandler.js';
+import clientController from '../controllers/client.controller.js';
+import { authMiddleware } from '../middleware/auth.js';
+
 const router = express.Router();
 
-router.get('/', asyncHandler(async (req, res) => {
-  res.json({ success: true, data: [] });
-}));
+// Apply auth middleware to all routes
+router.use(authMiddleware);
 
-router.post('/', asyncHandler(async (req, res) => {
-  res.status(201).json({ success: true, message: 'client created' });
-}));
-
-router.get('/:id', asyncHandler(async (req, res) => {
-  res.json({ success: true, data: { id: req.params.id } });
-}));
+// Client routes
+router.post('/', clientController.createClient);
+router.get('/', clientController.getClients);
+router.get('/search', clientController.searchClients);
+router.get('/:id/profile', clientController.getClientProfile);
+router.get('/:id/events', clientController.getClientEvents);
+router.get('/:id/statistics', clientController.getClientStatistics);
+router.get('/:id', clientController.getClientById);
+router.put('/:id', clientController.updateClient);
+router.delete('/:id', clientController.deleteClient);
 
 export default router;

@@ -1,17 +1,38 @@
 import express from 'express';
-import { asyncHandler } from '../utils/asyncHandler.js';
+import {
+  createTest,
+  getTestById,
+  getAllTests,
+  updateTest,
+  deleteTest,
+  getTestStatistics,
+  enterTestResult,
+  updateTestResult,
+  deleteTestResult,
+  getToppers,
+  getStudentPerformance
+} from '../controllers/test.controller.js';
+
 const router = express.Router();
 
-router.get('/', asyncHandler(async (req, res) => {
-  res.json({ success: true, data: [] });
-}));
+/**
+ * @swagger
+ * tags:
+ *   name: Tests
+ *   description: Test and result management endpoints
+ */
 
-router.post('/', asyncHandler(async (req, res) => {
-  res.status(201).json({ success: true, message: 'test created' });
-}));
+router.post('/', createTest);
+router.get('/', getAllTests);
+router.get('/:id', getTestById);
+router.put('/:id', updateTest);
+router.delete('/:id', deleteTest);
+router.get('/:id/statistics', getTestStatistics);
+router.get('/:testId/toppers', getToppers);
 
-router.get('/:id', asyncHandler(async (req, res) => {
-  res.json({ success: true, data: { id: req.params.id } });
-}));
+// Test results routes
+router.post('/results', enterTestResult);
+router.put('/results/:id', updateTestResult);
+router.delete('/results/:id', deleteTestResult);
 
 export default router;

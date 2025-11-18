@@ -1,17 +1,29 @@
 import express from 'express';
-import { asyncHandler } from '../utils/asyncHandler.js';
+import {
+  createFaculty,
+  getFacultyById,
+  getAllFaculty,
+  updateFaculty,
+  deleteFaculty,
+  getFacultyBatches,
+  getFacultyStatistics
+} from '../controllers/faculty.controller.js';
+
 const router = express.Router();
 
-router.get('/', asyncHandler(async (req, res) => {
-  res.json({ success: true, data: [] });
-}));
+/**
+ * @swagger
+ * tags:
+ *   name: Faculty
+ *   description: Faculty management endpoints
+ */
 
-router.post('/', asyncHandler(async (req, res) => {
-  res.status(201).json({ success: true, message: 'faculty created' });
-}));
-
-router.get('/:id', asyncHandler(async (req, res) => {
-  res.json({ success: true, data: { id: req.params.id } });
-}));
+router.post('/', createFaculty);
+router.get('/', getAllFaculty);
+router.get('/:id', getFacultyById);
+router.put('/:id', updateFaculty);
+router.delete('/:id', deleteFaculty);
+router.get('/:id/batches', getFacultyBatches);
+router.get('/:id/statistics', getFacultyStatistics);
 
 export default router;

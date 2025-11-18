@@ -1,17 +1,20 @@
 import express from 'express';
-import { asyncHandler } from '../utils/asyncHandler.js';
+import gymController from '../controllers/gym.controller.js';
+import { authMiddleware } from '../middleware/auth.js';
+
 const router = express.Router();
 
-router.get('/', asyncHandler(async (req, res) => {
-  res.json({ success: true, data: [] });
-}));
+// Apply auth middleware to all routes
+router.use(authMiddleware);
 
-router.post('/', asyncHandler(async (req, res) => {
-  res.status(201).json({ success: true, message: 'gym created' });
-}));
-
-router.get('/:id', asyncHandler(async (req, res) => {
-  res.json({ success: true, data: { id: req.params.id } });
-}));
+// Gym routes
+router.post('/', gymController.createGym);
+router.get('/', gymController.getAllGyms);
+router.get('/active', gymController.getActiveGyms);
+router.get('/search', gymController.searchGyms);
+router.get('/:id', gymController.getGymById);
+router.get('/:id/stats', gymController.getGymWithStats);
+router.put('/:id', gymController.updateGym);
+router.delete('/:id', gymController.deleteGym);
 
 export default router;

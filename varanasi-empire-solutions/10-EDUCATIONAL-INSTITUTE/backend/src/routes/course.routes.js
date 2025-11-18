@@ -1,17 +1,27 @@
 import express from 'express';
-import { asyncHandler } from '../utils/asyncHandler.js';
+import {
+  createCourse,
+  getCourseById,
+  getAllCourses,
+  updateCourse,
+  deleteCourse,
+  getCourseEnrollmentStats
+} from '../controllers/course.controller.js';
+
 const router = express.Router();
 
-router.get('/', asyncHandler(async (req, res) => {
-  res.json({ success: true, data: [] });
-}));
+/**
+ * @swagger
+ * tags:
+ *   name: Courses
+ *   description: Course management endpoints
+ */
 
-router.post('/', asyncHandler(async (req, res) => {
-  res.status(201).json({ success: true, message: 'course created' });
-}));
-
-router.get('/:id', asyncHandler(async (req, res) => {
-  res.json({ success: true, data: { id: req.params.id } });
-}));
+router.post('/', createCourse);
+router.get('/', getAllCourses);
+router.get('/:id', getCourseById);
+router.put('/:id', updateCourse);
+router.delete('/:id', deleteCourse);
+router.get('/:id/enrollment-stats', getCourseEnrollmentStats);
 
 export default router;

@@ -1,17 +1,31 @@
 import express from 'express';
-import { asyncHandler } from '../utils/asyncHandler.js';
+import {
+  markAttendance,
+  markBulkAttendance,
+  getAttendanceById,
+  getAllAttendance,
+  updateAttendance,
+  deleteAttendance,
+  getAttendancePercentage,
+  getBatchAttendanceReport,
+  getStudentAttendanceSummary,
+  getLowAttendanceStudents
+} from '../controllers/attendance.controller.js';
+
 const router = express.Router();
 
-router.get('/', asyncHandler(async (req, res) => {
-  res.json({ success: true, data: [] });
-}));
+/**
+ * @swagger
+ * tags:
+ *   name: Attendance
+ *   description: Attendance management endpoints
+ */
 
-router.post('/', asyncHandler(async (req, res) => {
-  res.status(201).json({ success: true, message: 'attendance created' });
-}));
-
-router.get('/:id', asyncHandler(async (req, res) => {
-  res.json({ success: true, data: { id: req.params.id } });
-}));
+router.post('/', markAttendance);
+router.post('/bulk', markBulkAttendance);
+router.get('/', getAllAttendance);
+router.get('/:id', getAttendanceById);
+router.put('/:id', updateAttendance);
+router.delete('/:id', deleteAttendance);
 
 export default router;

@@ -13,6 +13,7 @@ import { notFoundHandler } from './middleware/notFoundHandler.js';
 import { authMiddleware } from './middleware/auth.js';
 import { pool, testConnection } from './config/database.js';
 import { startScheduledJobs } from './jobs/index.js';
+import apiRoutes from './routes/index.js';
 
 dotenv.config();
 const app = express();
@@ -26,11 +27,11 @@ app.use(requestLogger);
 app.use(rateLimiter);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-const apiRouter = express.Router();
-app.use('/api/v1', apiRouter);
+// API Routes
+app.use('/api/v1', apiRoutes);
 
 app.get('/', (req, res) => {
-  res.json({ success: true, message: 'API Running', version: 'v1' });
+  res.json({ success: true, message: 'Professional Services Hub API', version: 'v1' });
 });
 
 app.use(notFoundHandler);
