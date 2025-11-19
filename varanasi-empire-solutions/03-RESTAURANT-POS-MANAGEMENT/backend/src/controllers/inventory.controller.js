@@ -247,6 +247,40 @@ const checkStockAvailability = asyncHandler(async (req, res) => {
   });
 });
 
+
+/**
+ * Create purchase order
+ */
+const createPurchaseOrder = asyncHandler(async (req, res) => {
+  const orderData = req.body;
+  
+  const order = await inventoryService.createPurchaseOrder(orderData);
+  
+  logger.info(`Purchase order created: ${order.id}`);
+  
+  res.status(201).json({
+    success: true,
+    message: 'Purchase order created successfully',
+    data: order,
+  });
+});
+
+/**
+ * Get purchase orders
+ */
+const getPurchaseOrders = asyncHandler(async (req, res) => {
+  const { limit = 10, offset = 0 } = req.query;
+  
+  const orders = await inventoryService.getPurchaseOrders({
+    limit: parseInt(limit),
+    offset: parseInt(offset),
+  });
+  
+  res.json({
+    success: true,
+    data: orders,
+  });
+});
 export const inventoryController = {
   createItem,
   getItem,
@@ -260,4 +294,6 @@ export const inventoryController = {
   getInventoryReport,
   updateItem,
   checkStockAvailability,
+  createPurchaseOrder,
+  getPurchaseOrders,
 };

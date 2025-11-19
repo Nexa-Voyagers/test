@@ -13,7 +13,7 @@ const router = express.Router();
  *     security:
  *       - bearerAuth: []
  */
-router.get('/categories', menuController.getAllCategories);
+router.get('/categories', menuController.getCategories);
 
 /**
  * @swagger
@@ -35,7 +35,7 @@ router.post('/categories', authorize('admin', 'manager'), menuController.createC
  *     security:
  *       - bearerAuth: []
  */
-router.get('/items', menuController.getAllMenuItems);
+router.get('/items', menuController.getRestaurantItems);
 
 /**
  * @swagger
@@ -46,7 +46,7 @@ router.get('/items', menuController.getAllMenuItems);
  *     security:
  *       - bearerAuth: []
  */
-router.get('/items/:id', menuController.getMenuItemById);
+router.get('/items/:id', menuController.getMenuItem);
 
 /**
  * @swagger
@@ -57,7 +57,7 @@ router.get('/items/:id', menuController.getMenuItemById);
  *     security:
  *       - bearerAuth: []
  */
-router.post('/items', authorize('admin', 'manager'), menuController.createMenuItem);
+router.post('/items', authorize('admin', 'manager'), menuController.createItem);
 
 /**
  * @swagger
@@ -68,7 +68,7 @@ router.post('/items', authorize('admin', 'manager'), menuController.createMenuIt
  *     security:
  *       - bearerAuth: []
  */
-router.put('/items/:id', authorize('admin', 'manager'), menuController.updateMenuItem);
+router.put('/items/:id', authorize('admin', 'manager'), menuController.updateItem);
 
 /**
  * @swagger
@@ -79,7 +79,7 @@ router.put('/items/:id', authorize('admin', 'manager'), menuController.updateMen
  *     security:
  *       - bearerAuth: []
  */
-router.delete('/items/:id', authorize('admin'), menuController.deleteMenuItem);
+router.delete('/items/:id', authorize('admin'), menuController.deleteItem);
 
 /**
  * @swagger
@@ -90,6 +90,5 @@ router.delete('/items/:id', authorize('admin'), menuController.deleteMenuItem);
  *     security:
  *       - bearerAuth: []
  */
-router.patch('/items/:id/availability', authorize('admin', 'manager'), menuController.updateAvailability);
 
 export default router;

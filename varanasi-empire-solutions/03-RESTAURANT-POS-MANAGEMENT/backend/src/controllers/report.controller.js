@@ -145,6 +145,39 @@ const getDashboardSummary = asyncHandler(async (req, res) => {
   });
 });
 
+
+/**
+ * Get top selling items
+ */
+const getTopSellingItems = asyncHandler(async (req, res) => {
+  const { limit = 10 } = req.query;
+  
+  const items = await reportService.getTopSelling(req.user.restaurant_id, {
+    limit: parseInt(limit),
+  });
+  
+  res.json({
+    success: true,
+    data: items,
+  });
+});
+
+/**
+ * Get waste report
+ */
+const getWasteReport = asyncHandler(async (req, res) => {
+  const { from_date, to_date } = req.query;
+  
+  const report = await reportService.getWasteAnalysis(req.user.restaurant_id, {
+    from_date,
+    to_date,
+  });
+  
+  res.json({
+    success: true,
+    data: report,
+  });
+});
 export const reportController = {
   getSalesReport,
   getDailySalesReport,
@@ -155,4 +188,6 @@ export const reportController = {
   getHourlySalesDistribution,
   getPaymentMethodBreakdown,
   getDashboardSummary,
+  getTopSellingItems,
+  getWasteReport,
 };

@@ -197,6 +197,42 @@ const getChefSpecials = asyncHandler(async (req, res) => {
   });
 });
 
+
+/**
+ * Delete menu item
+ * DELETE /api/menu/items/:id
+ */
+const deleteItem = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  await menuService.deleteItem(id);
+
+  logger.info(`Menu item deleted: ${id}`);
+
+  res.json({
+    success: true,
+    message: 'Menu item deleted successfully',
+  });
+});
+
+/**
+ * Update item availability
+ * PATCH /api/menu/items/:id/availability
+ */
+const updateAvailability = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { is_available } = req.body;
+
+  const item = await menuService.updateItem(id, { is_available });
+
+  logger.info(`Menu item availability updated: ${id} - ${is_available}`);
+
+  res.json({
+    success: true,
+    message: 'Item availability updated successfully',
+    data: item,
+  });
+});
 export const menuController = {
   createCategory,
   createItem,
@@ -209,4 +245,6 @@ export const menuController = {
   updateItem,
   getFeaturedItems,
   getChefSpecials,
+  deleteItem,
+  updateAvailability,
 };

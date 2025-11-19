@@ -13,7 +13,7 @@ const router = express.Router();
  *     security:
  *       - bearerAuth: []
  */
-router.get('/', tableController.getAllTables);
+router.get('/', tableController.getRestaurantTables);
 
 /**
  * @swagger
@@ -24,7 +24,7 @@ router.get('/', tableController.getAllTables);
  *     security:
  *       - bearerAuth: []
  */
-router.get('/:id', tableController.getTableById);
+router.get('/:id', tableController.getTable);
 
 /**
  * @swagger

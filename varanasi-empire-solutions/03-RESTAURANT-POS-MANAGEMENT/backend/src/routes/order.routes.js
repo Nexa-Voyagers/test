@@ -33,7 +33,7 @@ const router = express.Router();
  *           type: string
  *           format: date
  */
-router.get('/', orderController.getAllOrders);
+router.get('/', orderController.getRestaurantOrders);
 
 /**
  * @swagger
@@ -44,7 +44,7 @@ router.get('/', orderController.getAllOrders);
  *     security:
  *       - bearerAuth: []
  */
-router.get('/:id', orderController.getOrderById);
+router.get('/:id', orderController.getOrder);
 
 /**
  * @swagger
@@ -100,7 +100,7 @@ router.patch('/:id/status', orderController.updateOrderStatus);
  *     security:
  *       - bearerAuth: []
  */
-router.post('/:id/items', orderController.addItemsToOrder);
+router.post('/:id/items', orderController.addItem);
 
 /**
  * @swagger

@@ -262,6 +262,36 @@ const getOrdersByTable = asyncHandler(async (req, res) => {
   });
 });
 
+
+/**
+ * Remove item from order
+ */
+const removeItemFromOrder = asyncHandler(async (req, res) => {
+  const { id, itemId } = req.params;
+  
+  await orderService.removeItem(id, itemId);
+  
+  logger.info(`Item ${itemId} removed from order ${id}`);
+  
+  res.json({
+    success: true,
+    message: 'Item removed from order successfully',
+  });
+});
+
+/**
+ * Get invoice
+ */
+const getInvoice = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  
+  const invoice = await orderService.generateInvoice(id);
+  
+  res.json({
+    success: true,
+    data: invoice,
+  });
+});
 export const orderController = {
   createOrder,
   getOrder,
@@ -275,4 +305,6 @@ export const orderController = {
   updateItemStatus,
   calculateTotal,
   getOrdersByTable,
+  removeItemFromOrder,
+  getInvoice,
 };

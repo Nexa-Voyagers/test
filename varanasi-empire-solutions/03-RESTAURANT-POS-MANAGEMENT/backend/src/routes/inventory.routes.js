@@ -13,7 +13,7 @@ const router = express.Router();
  *     security:
  *       - bearerAuth: []
  */
-router.get('/ingredients', inventoryController.getAllIngredients);
+router.get('/ingredients', inventoryController.getItems);
 
 /**
  * @swagger
@@ -24,7 +24,7 @@ router.get('/ingredients', inventoryController.getAllIngredients);
  *     security:
  *       - bearerAuth: []
  */
-router.post('/ingredients', authorize('admin', 'manager'), inventoryController.addIngredient);
+router.post('/ingredients', authorize('admin', 'manager'), inventoryController.createItem);
 
 /**
  * @swagger
@@ -35,7 +35,7 @@ router.post('/ingredients', authorize('admin', 'manager'), inventoryController.a
  *     security:
  *       - bearerAuth: []
  */
-router.get('/stock', inventoryController.getStockLevels);
+router.get('/stock', inventoryController.getItems);
 
 /**
  * @swagger
@@ -46,7 +46,7 @@ router.get('/stock', inventoryController.getStockLevels);
  *     security:
  *       - bearerAuth: []
  */
-router.post('/stock/update', authorize('admin', 'manager'), inventoryController.updateStock);
+router.post('/stock/update', authorize('admin', 'manager'), inventoryController.adjustStock);
 
 /**
  * @swagger
@@ -57,7 +57,7 @@ router.post('/stock/update', authorize('admin', 'manager'), inventoryController.
  *     security:
  *       - bearerAuth: []
  */
-router.get('/alerts', authorize('admin', 'manager'), inventoryController.getLowStockAlerts);
+router.get('/alerts', authorize('admin', 'manager'), inventoryController.getLowStockItems);
 
 /**
  * @swagger

@@ -286,6 +286,31 @@ const reserveTable = asyncHandler(async (req, res) => {
   });
 });
 
+
+/**
+ * Update table status
+ */
+const updateTableStatus = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  
+  let result;
+  if (status === 'OCCUPIED') {
+    result = await tableService.occupy(id);
+  } else if (status === 'AVAILABLE') {
+    result = await tableService.release(id);
+  } else {
+    result = await tableService.updateTable(id, { status });
+  }
+  
+  logger.info(`Table ${id} status updated to ${status}`);
+  
+  res.json({
+    success: true,
+    message: 'Table status updated successfully',
+    data: result,
+  });
+});
 export const tableController = {
   createFloor,
   createTable,
@@ -301,4 +326,5 @@ export const tableController = {
   updateTable,
   getStatistics,
   reserveTable,
+  updateTableStatus,
 };

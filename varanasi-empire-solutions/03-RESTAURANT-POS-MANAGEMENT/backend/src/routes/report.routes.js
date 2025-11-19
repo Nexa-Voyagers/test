@@ -53,7 +53,7 @@ router.get('/top-items', authorize('admin', 'manager'), reportController.getTopS
  *     security:
  *       - bearerAuth: []
  */
-router.get('/revenue', authorize('admin', 'manager'), reportController.getRevenueReport);
+router.get('/revenue', authorize('admin', 'manager'), reportController.getRevenueByOrderType);
 
 /**
  * @swagger
@@ -64,7 +64,7 @@ router.get('/revenue', authorize('admin', 'manager'), reportController.getRevenu
  *     security:
  *       - bearerAuth: []
  */
-router.get('/staff-performance', authorize('admin', 'manager'), reportController.getStaffPerformance);
+router.get('/staff-performance', authorize('admin', 'manager'), reportController.getPerformanceMetrics);
 
 /**
  * @swagger
@@ -75,7 +75,7 @@ router.get('/staff-performance', authorize('admin', 'manager'), reportController
  *     security:
  *       - bearerAuth: []
  */
-router.get('/inventory-usage', authorize('admin', 'manager'), reportController.getInventoryUsage);
+router.get('/inventory-usage', authorize('admin', 'manager'), reportController.getInventoryReport);
 
 /**
  * @swagger

@@ -24,7 +24,7 @@ router.get('/', authorize('admin', 'manager'), restaurantController.getAllRestau
  *     security:
  *       - bearerAuth: []
  */
-router.get('/:id', restaurantController.getRestaurantById);
+router.get('/:id', restaurantController.getRestaurant);
 
 /**
  * @swagger
