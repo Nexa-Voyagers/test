@@ -33,7 +33,7 @@ import healthRoutes from './routes/health.routes.js';
 import { pool, testConnection } from './config/database.js';
 
 // Import jobs
-import { startScheduledJobs } from './jobs/index.js';
+import { initializeJobs } from './jobs/index.js';
 
 dotenv.config();
 
@@ -133,7 +133,7 @@ const startServer = async () => {
     await testConnection();
 
     // Start scheduled jobs
-    startScheduledJobs();
+    initializeJobs();
 
     app.listen(PORT, () => {
       logger.info(`🚀 Restaurant POS Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);

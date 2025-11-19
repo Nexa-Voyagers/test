@@ -35,6 +35,6 @@ router.put('/profile', userController.updateProfile);
  *     security:
  *       - bearerAuth: []
  */
-router.get('/', authorize('admin'), userController.getAllUsers);
+router.get('/', authorize('admin'), userController.getRestaurantUsers);
 
 export default router;
