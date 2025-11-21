@@ -1,10 +1,37 @@
 import { post, getToken, setToken, setRefreshToken, clearAuthTokens } from './api';
 import { AuthCredentials, AuthResponse, RegisterCredentials, User } from '@/types';
 
+// Demo mode - set to true to bypass backend API
+const DEMO_MODE = true;
+
+const DEMO_USER: User = {
+  id: 'demo-user-1',
+  email: 'demo@example.com',
+  name: 'Demo User',
+  role: 'admin',
+  avatar: undefined,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+};
+
+const DEMO_TOKEN = 'demo-token-' + Date.now();
+
 /**
  * Login user with email and password
  */
 export async function loginUser(credentials: AuthCredentials): Promise<AuthResponse> {
+  // Demo mode - accept any credentials
+  if (DEMO_MODE) {
+    const response: AuthResponse = {
+      user: { ...DEMO_USER, email: credentials.email },
+      token: DEMO_TOKEN,
+      refreshToken: DEMO_TOKEN,
+    };
+    setToken(response.token);
+    setRefreshToken(response.refreshToken);
+    return response;
+  }
+
   try {
     const response = await post<AuthResponse>('/auth/login', credentials);
 
@@ -22,6 +49,18 @@ export async function loginUser(credentials: AuthCredentials): Promise<AuthRespo
  * Register new user
  */
 export async function registerUser(credentials: RegisterCredentials): Promise<AuthResponse> {
+  // Demo mode - accept any credentials
+  if (DEMO_MODE) {
+    const response: AuthResponse = {
+      user: { ...DEMO_USER, email: credentials.email, name: credentials.name },
+      token: DEMO_TOKEN,
+      refreshToken: DEMO_TOKEN,
+    };
+    setToken(response.token);
+    setRefreshToken(response.refreshToken);
+    return response;
+  }
+
   try {
     const { confirmPassword, ...data } = credentials;
     const response = await post<AuthResponse>('/auth/register', data);
@@ -40,6 +79,11 @@ export async function registerUser(credentials: RegisterCredentials): Promise<Au
  * Logout user
  */
 export async function logoutUser(): Promise<void> {
+  if (DEMO_MODE) {
+    clearAuthTokens();
+    return;
+  }
+
   try {
     await post('/auth/logout');
   } catch (error) {
@@ -53,6 +97,10 @@ export async function logoutUser(): Promise<void> {
  * Get current user
  */
 export async function getCurrentUser(): Promise<User> {
+  if (DEMO_MODE) {
+    return DEMO_USER;
+  }
+
   try {
     return await post<User>('/auth/me');
   } catch (error) {
