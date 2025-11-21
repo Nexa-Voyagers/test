@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 const businesses = [
   { id: 1, name: 'Hotel & Hospitality Management', icon: '🏨', category: 'Hospitality', status: 'Complete', features: ['Room Booking', 'Guest Management', 'Housekeeping', 'Billing', 'Reports'] },
@@ -107,29 +109,32 @@ export default function DashboardPage() {
       {/* Business Cards Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filteredBusinesses.map((business) => (
-          <Card key={business.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <span className="text-4xl">{business.icon}</span>
-                <Badge variant="secondary">{business.category}</Badge>
-              </div>
-              <CardTitle className="text-lg mt-2">{business.name}</CardTitle>
-              <CardDescription>
-                <Badge variant="default" className="bg-green-600">
-                  {business.status}
-                </Badge>
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-1">
-                {business.features.map((feature, idx) => (
-                  <Badge key={idx} variant="outline" className="text-xs">
-                    {feature}
+          <Link key={business.id} href={`/business/${business.id}`}>
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full hover:border-primary">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <span className="text-4xl">{business.icon}</span>
+                  <Badge variant="secondary">{business.category}</Badge>
+                </div>
+                <CardTitle className="text-lg mt-2">{business.name}</CardTitle>
+                <CardDescription>
+                  <Badge variant="default" className="bg-green-600">
+                    {business.status}
                   </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-1 mb-3">
+                  {business.features.map((feature, idx) => (
+                    <Badge key={idx} variant="outline" className="text-xs">
+                      {feature}
+                    </Badge>
+                  ))}
+                </div>
+                <Button className="w-full" variant="outline">Open System</Button>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
 
