@@ -13,7 +13,6 @@ export function useAuth() {
     register,
     logout,
     fetchUser,
-    setError,
     clearError,
   } = useAuthStore();
 

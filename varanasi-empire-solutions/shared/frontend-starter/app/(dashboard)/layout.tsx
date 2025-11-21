@@ -5,15 +5,6 @@ import { ProtectedRoute } from '@/components/auth/protected-route';
 import { Sidebar } from '@/components/layout/sidebar';
 import { Header } from '@/components/layout/header';
 import { SidebarLink } from '@/types';
-import {
-  LayoutDashboard,
-  Users,
-  Settings,
-  BarChart3,
-  FileText,
-  Bell,
-  HelpCircle,
-} from 'lucide-react';
 
 const sidebarLinks: SidebarLink[] = [
   {
