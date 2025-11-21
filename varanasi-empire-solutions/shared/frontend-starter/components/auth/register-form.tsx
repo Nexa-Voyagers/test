@@ -62,7 +62,7 @@ export function RegisterForm() {
         password: values.password,
         confirmPassword: values.confirmPassword,
       });
-      router.push('/dashboard');
+      router.push('/');
     } catch (err) {
       console.error('Registration error:', err);
     } finally {

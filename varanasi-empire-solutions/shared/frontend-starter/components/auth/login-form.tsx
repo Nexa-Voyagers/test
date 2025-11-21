@@ -51,7 +51,7 @@ export function LoginForm() {
         email: values.email,
         password: values.password,
       });
-      router.push('/dashboard');
+      router.push('/');
     } catch (err) {
       console.error('Login error:', err);
     } finally {
