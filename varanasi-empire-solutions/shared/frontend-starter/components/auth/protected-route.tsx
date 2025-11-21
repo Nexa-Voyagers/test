@@ -51,7 +51,7 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
               <p className="text-muted-foreground">
                 You don't have permission to access this page.
               </p>
-              <Button onClick={() => router.push('/dashboard')}>
+              <Button onClick={() => router.push('/')}>
                 Go to Dashboard
               </Button>
             </div>

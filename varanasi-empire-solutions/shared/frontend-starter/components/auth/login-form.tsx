@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -28,8 +28,13 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
   const router = useRouter();
-  const { login, isLoading, error } = useAuth();
+  const { login, isLoading, error, clearError } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Clear any stale errors on mount
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -46,7 +51,7 @@ export function LoginForm() {
         email: values.email,
         password: values.password,
       });
-      router.push('/dashboard');
+      router.push('/');
     } catch (err) {
       console.error('Login error:', err);
     } finally {

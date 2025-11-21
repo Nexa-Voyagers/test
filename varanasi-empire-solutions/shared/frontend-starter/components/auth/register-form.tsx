@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -35,8 +35,13 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export function RegisterForm() {
   const router = useRouter();
-  const { register, isLoading, error } = useAuth();
+  const { register, isLoading, error, clearError } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Clear any stale errors on mount
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -57,7 +62,7 @@ export function RegisterForm() {
         password: values.password,
         confirmPassword: values.confirmPassword,
       });
-      router.push('/dashboard');
+      router.push('/');
     } catch (err) {
       console.error('Registration error:', err);
     } finally {

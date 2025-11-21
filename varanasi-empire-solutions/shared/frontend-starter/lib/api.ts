@@ -89,13 +89,14 @@ export async function apiRequest<T = unknown>(
   try {
     const { method = 'GET', data, params, config = {} } = options;
 
-    const response = await apiClient.request<ApiResponse<T>>({
+    // Note: Response interceptor already unwraps response.data
+    const response = (await apiClient.request({
       url,
       method,
       data,
       params,
       timeout: config.timeout,
-    });
+    })) as ApiResponse<T>;
 
     if (response.success === false) {
       throw new Error(response.message || 'API request failed');

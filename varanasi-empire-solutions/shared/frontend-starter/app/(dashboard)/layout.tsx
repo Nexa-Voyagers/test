@@ -5,45 +5,36 @@ import { ProtectedRoute } from '@/components/auth/protected-route';
 import { Sidebar } from '@/components/layout/sidebar';
 import { Header } from '@/components/layout/header';
 import { SidebarLink } from '@/types';
-import {
-  LayoutDashboard,
-  Users,
-  Settings,
-  BarChart3,
-  FileText,
-  Bell,
-  HelpCircle,
-} from 'lucide-react';
 
 const sidebarLinks: SidebarLink[] = [
   {
     id: '1',
     label: 'Dashboard',
-    href: '/dashboard',
+    href: '/',
     icon: '📊',
   },
   {
     id: '2',
     label: 'Users',
-    href: '/dashboard/users',
+    href: '/users',
     icon: '👥',
   },
   {
     id: '3',
     label: 'Analytics',
-    href: '/dashboard/analytics',
+    href: '/analytics',
     icon: '📈',
   },
   {
     id: '4',
     label: 'Reports',
-    href: '/dashboard/reports',
+    href: '/reports',
     icon: '📄',
   },
   {
     id: '5',
     label: 'Settings',
-    href: '/dashboard/settings',
+    href: '/settings',
     icon: '⚙️',
   },
 ];
