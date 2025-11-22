@@ -33,6 +33,12 @@ const sidebarLinks: SidebarLink[] = [
   },
   {
     id: '5',
+    label: 'Documentation',
+    href: '/complete-documentation',
+    icon: '📚',
+  },
+  {
+    id: '6',
     label: 'Settings',
     href: '/settings',
     icon: '⚙️',
