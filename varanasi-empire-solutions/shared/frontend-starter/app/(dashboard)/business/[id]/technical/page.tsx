@@ -7,9 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { databaseSchemas } from '@/lib/databaseSchemas';
-import { deploymentScenarios } from '@/lib/deploymentScenarios';
-import { onboardingChecklists } from '@/lib/onboardingChecklists';
+import { completeBusinessData } from '@/lib/allBusinessesData';
 
 export default function TechnicalDocumentationPage() {
   const params = useParams();
@@ -18,14 +16,13 @@ export default function TechnicalDocumentationPage() {
   const [selectedScenario, setSelectedScenario] = useState(0);
   const [selectedPhase, setSelectedPhase] = useState(0);
 
-  // Database schema data
-  const dbSchema = (databaseSchemas as any)[id];
+  // Get complete business data
+  const businessData = (completeBusinessData as any)[id];
 
-  // Deployment scenarios data
-  const deploymentData = (deploymentScenarios as any)[id];
-
-  // Onboarding checklist data
-  const onboardingData = (onboardingChecklists as any)[id];
+  // Extract individual data sections
+  const dbSchema = businessData?.database;
+  const deploymentData = businessData?.deployment;
+  const onboardingData = businessData?.onboarding;
 
   if (!dbSchema && !deploymentData && !onboardingData) {
     return (
